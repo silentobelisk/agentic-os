@@ -1,26 +1,251 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================
+   NERVE CENTER — cinematic operator console design system
+   Dark, warm, signal-minimal. Amber accent, mono data type.
+   ============================================================ */
+
+@theme {
+  /* base surfaces */
+  --color-base: #0a0a0b;
+  --color-base-2: #0d0c0d;
+  --color-panel: rgba(255, 255, 255, 0.022);
+  --color-panel-2: rgba(255, 255, 255, 0.04);
+  --color-raised: rgba(255, 255, 255, 0.055);
+
+  /* hairlines */
+  --color-line: rgba(255, 255, 255, 0.09);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+  --color-line-soft: rgba(255, 255, 255, 0.05);
+
+  /* ink */
+  --color-ink: #f3efe7;
+  --color-ink-2: #b8b2a7;
+  --color-ink-dim: #8a8479;
+  --color-ink-faint: #726c62;
+
+  /* accent — warm amber/orange (the "signal" color) */
+  --color-accent: #ff6a2b;
+  --color-accent-deep: #e3531a;
+  --color-accent-soft: rgba(255, 106, 43, 0.12);
+  --color-accent-line: rgba(255, 106, 43, 0.4);
+
+  /* status */
+  --color-online: #76e06a;
+  --color-online-soft: rgba(118, 224, 106, 0.12);
+  --color-cool: #5aa9ff;
+  --color-warn: #ffd166;
+
+  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  --radius-panel: 4px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-base);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "tnum" 1, "ss01" 1;
+  }
+
+  /* The full-bleed cinematic backdrop: layered warm bloom over near-black,
+     plus a faint scan vignette. Fixed so it doesn't scroll. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(120% 80% at 78% -10%, rgba(255, 106, 43, 0.1) 0%, rgba(255, 106, 43, 0.03) 30%, transparent 58%),
+      radial-gradient(90% 70% at 12% 8%, rgba(90, 120, 170, 0.06) 0%, transparent 50%),
+      radial-gradient(140% 120% at 50% 120%, rgba(255, 138, 70, 0.07) 0%, transparent 55%),
+      linear-gradient(180deg, #0b0a0a 0%, #090809 45%, #0a0908 100%);
+  }
+
+  /* fine film grain so flat panels read as physical glass */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* uppercase technical micro-label */
+  .label {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 10px;
+    line-height: 1;
+    color: var(--color-ink-dim);
+  }
+
+  .label-tight {
+    letter-spacing: 0.12em;
+  }
+
+  /* tabular mono numerals */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* the glass panel surface */
+  .panel {
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-panel);
+    backdrop-filter: blur(6px);
+  }
+
+  /* amber glow text for live signal values */
+  .glow-accent {
+    color: var(--color-accent);
+    text-shadow: 0 0 18px rgba(255, 106, 43, 0.35);
+  }
+  .glow-online {
+    color: var(--color-online);
+    text-shadow: 0 0 16px rgba(118, 224, 106, 0.3);
+  }
+
+  /* dotted leader line, fills available space (HUD section headers) */
+  .leader {
+    flex: 1 1 auto;
+    height: 1px;
+    background-image: radial-gradient(circle, var(--color-line-strong) 1px, transparent 1.4px);
+    background-size: 6px 1px;
+    background-repeat: repeat-x;
+    background-position: left center;
+    opacity: 0.7;
+  }
+
+  /* tiny inline tick separators | | | */
+  .ticks {
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--color-line-strong) 0 1px,
+      transparent 1px 7px
+    );
+  }
+
+  /* thin custom scrollbar for the skills rail */
+  .rail-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  .rail-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+  .rail-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+    border-radius: 99px;
+  }
+  .rail-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  .pulse {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+  }
+  .sweep::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 106, 43, 0.18), transparent);
+    animation: sweep 1.6s linear infinite;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .rise {
+    animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* an "active underline" affordance for clickable cards — invisible at rest,
+     sweeps in on hover. keeps the flat HUD look while signalling interactivity. */
+  .card-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .card-underline:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+/* ── interaction affordances ─────────────────────────────────────────────
+   Tailwind v4 no longer sets cursor:pointer on buttons, so without this every
+   control shows the default arrow and reads as non-interactive. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  summary,
+  select,
+  label[for] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  /* tactile press for controls that don't define their own active transform */
+  button:not(:disabled):active {
+    transform: translateY(0.5px);
+  }
+
+  /* keyboard affordance, on-brand amber */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 1px solid var(--color-accent-line);
+    outline-offset: 2px;
+  }
 }
