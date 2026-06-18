@@ -74,6 +74,8 @@ export interface ProfileResponse {
   analyzedAt: number | null;
   fileCount: number | null;
   source: "ai" | "stats" | null; // how the cards were produced
+  onboardedAt: number | null; // epoch ms the first-run wizard was completed
+  onboardingVersion: number | null; // which wizard version they finished
   error?: string;
 }
 

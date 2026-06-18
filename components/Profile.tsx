@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { GraphData } from "@/lib/graph";
+import { entryToFiles, toPayload, initials, type FsEntry } from "@/lib/brain-upload";
 import { Panel, SectionHeader, Hair, Chip, Corners, cn } from "./hud";
 import GraphCanvas from "./GraphCanvas";
 
@@ -16,65 +17,6 @@ function monthYear(iso?: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
   return isNaN(+d) ? "—" : d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-}
-
-const TEXT_RE = /\.(md|markdown|mdx|txt|org|rst|text|csv|json)$/i;
-
-function initials(name: string): string {
-  const p = name.trim().split(/\s+/).filter(Boolean);
-  if (!p.length) return "—";
-  if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
-  return (p[0][0] + p[p.length - 1][0]).toUpperCase();
-}
-
-// recurse a dropped folder entry into a flat file list (with relative paths)
-interface FsEntry {
-  isFile: boolean;
-  isDirectory: boolean;
-  fullPath?: string;
-  file?: (cb: (f: File) => void, err?: () => void) => void;
-  createReader?: () => { readEntries: (cb: (e: FsEntry[]) => void, err?: () => void) => void };
-}
-function entryToFiles(entry: FsEntry): Promise<{ file: File; path: string }[]> {
-  return new Promise((resolve) => {
-    if (entry.isFile && entry.file) {
-      entry.file(
-        (f) => resolve([{ file: f, path: (entry.fullPath || "/" + f.name).replace(/^\//, "") }]),
-        () => resolve([])
-      );
-    } else if (entry.isDirectory && entry.createReader) {
-      const reader = entry.createReader();
-      const acc: FsEntry[] = [];
-      const readBatch = () =>
-        reader.readEntries(async (ents) => {
-          if (!ents.length) {
-            const nested = await Promise.all(acc.map((e) => entryToFiles(e)));
-            resolve(nested.flat());
-          } else {
-            acc.push(...ents);
-            readBatch();
-          }
-        }, () => resolve([]));
-      readBatch();
-    } else resolve([]);
-  });
-}
-
-async function toPayload(files: { file: File; path: string }[]): Promise<{ path: string; content: string }[]> {
-  const out: { path: string; content: string }[] = [];
-  let bytes = 0;
-  for (const { file, path } of files) {
-    if (!TEXT_RE.test(path) || file.size > 1_000_000) continue;
-    if (out.length >= 2000 || bytes > 24_000_000) break;
-    try {
-      const content = await file.text();
-      out.push({ path, content });
-      bytes += content.length;
-    } catch {
-      /* skip */
-    }
-  }
-  return out;
 }
 
 export default function Profile() {

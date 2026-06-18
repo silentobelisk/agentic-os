@@ -1,4 +1,4 @@
-import { readProfile, mergeProfile, toResponse, type StoredProfile } from "@/lib/profile-store";
+import { readProfile, mergeProfile, toResponse, isOnboarded, CURRENT_ONBOARDING_VERSION, type StoredProfile } from "@/lib/profile-store";
 import { getClaudeConfig, detectPlan } from "@/lib/plan";
 
 export const runtime = "nodejs";
@@ -24,7 +24,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  let body: { name?: unknown; bio?: unknown; brainPath?: unknown } = {};
+  let body: { name?: unknown; bio?: unknown; brainPath?: unknown; onboardingComplete?: unknown } = {};
   try {
     body = await request.json();
   } catch {
@@ -34,5 +34,17 @@ export async function POST(request: Request) {
   if (typeof body.name === "string") patch.name = body.name.slice(0, 80);
   if (typeof body.bio === "string") patch.bio = body.bio.slice(0, 240);
   if (typeof body.brainPath === "string") patch.brainPath = body.brainPath.slice(0, 1000);
-  return Response.json(toResponse(mergeProfile(patch)));
+  // Stamp the first-run completion server-side (client never supplies the time).
+  const completing = body.onboardingComplete === true;
+  if (completing) {
+    patch.onboardedAt = Date.now();
+    patch.onboardingVersion = CURRENT_ONBOARDING_VERSION;
+  }
+  const merged = mergeProfile(patch);
+  // Confirm the completion actually persisted to disk (re-read), so a read-only
+  // data dir surfaces as an error the wizard can show instead of a false success.
+  if (completing && !isOnboarded()) {
+    return Response.json({ ...toResponse(merged), onboardedAt: null }, { status: 500 });
+  }
+  return Response.json(toResponse(merged));
 }

@@ -17,8 +17,8 @@
 /.next/
 /out/
 
-# production
-/build
+# NOTE: Next builds to /.next (ignored above). The /build dir holds committed
+# electron-builder resources (icon.icns, dmg background) and is intentionally tracked.
 
 # misc
 .DS_Store
@@ -35,6 +35,10 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# electron-builder output
+/release
+/dist
 
 # typescript
 *.tsbuildinfo

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agentic OS — a local operations console for Claude Code</title>
+<meta name="description" content="A cinematic, local-first desktop console for Claude Code. Plan usage, skills, a second-brain knowledge graph, and a live terminal — all on your machine, on your Claude subscription." />
+<link rel="icon" href="favicon.png" />
+<meta property="og:title" content="Agentic OS" />
+<meta property="og:description" content="A local operations console for Claude Code. Runs on your machine, on your Claude subscription." />
+<meta property="og:image" content="icon.png" />
+<style>
+  :root{
+    --base:#0a0a0b; --panel:rgba(255,255,255,.022); --panel2:rgba(255,255,255,.04);
+    --line:rgba(255,255,255,.09); --line-strong:rgba(255,255,255,.16);
+    --ink:#f3efe7; --ink2:#b8b2a7; --ink-dim:#8a8479; --ink-faint:#726c62;
+    --accent:#ff6a2b; --accent-soft:rgba(255,106,43,.12); --accent-line:rgba(255,106,43,.4);
+    --online:#76e06a;
+    --mono:ui-monospace,'SF Mono',Menlo,monospace;
+    --sans:-apple-system,'SF Pro Display',system-ui,Segoe UI,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{color-scheme:dark}
+  body{
+    font-family:var(--mono); color:var(--ink); background:var(--base);
+    -webkit-font-smoothing:antialiased; line-height:1.6; min-height:100vh; overflow-x:hidden;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:-2;
+    background:
+      radial-gradient(120% 80% at 78% -10%, rgba(255,106,43,.12) 0%, rgba(255,106,43,.03) 30%, transparent 58%),
+      radial-gradient(90% 70% at 12% 8%, rgba(90,120,170,.06) 0%, transparent 50%),
+      radial-gradient(140% 120% at 50% 120%, rgba(255,138,70,.07) 0%, transparent 55%),
+      linear-gradient(180deg,#0b0a0a,#090809 45%,#0a0908);
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  .label{font-family:var(--mono);text-transform:uppercase;letter-spacing:.18em;font-size:10px;color:var(--ink-dim)}
+  .leader{flex:1;height:1px;background-image:radial-gradient(circle,var(--line-strong) 1px,transparent 1.4px);background-size:6px 1px;background-repeat:repeat-x;opacity:.6}
+
+  /* top bar */
+  header{display:flex;align-items:center;gap:11px;padding:22px 0;border-bottom:1px solid var(--line)}
+  header img{width:30px;height:30px;border-radius:7px}
+  header .wm{font-family:var(--sans);font-weight:700;letter-spacing:.24em;text-transform:uppercase;font-size:15px}
+  header .right{margin-left:auto;display:flex;gap:14px;align-items:center}
+  header a{color:var(--ink-dim);text-decoration:none;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+  header a:hover{color:var(--ink)}
+
+  /* hero */
+  .hero{text-align:center;padding:84px 0 60px;position:relative}
+  .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);padding:6px 12px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:30px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--online);box-shadow:0 0 10px var(--online);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .hero img.mark{width:96px;height:96px;border-radius:22px;box-shadow:0 0 60px rgba(255,106,43,.3);margin-bottom:26px}
+  .hero h1{font-family:var(--sans);font-size:54px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;line-height:1.05}
+  .hero h1 .glow{color:var(--accent);text-shadow:0 0 32px rgba(255,106,43,.45)}
+  .hero .tag{margin-top:18px;font-size:15px;color:var(--ink2);max-width:600px;margin-left:auto;margin-right:auto;letter-spacing:.02em}
+
+  /* download */
+  .dl{margin-top:42px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .btn{display:inline-flex;align-items:center;gap:12px;background:var(--accent);color:#0a0a0b;
+    font-family:var(--sans);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:15px;
+    padding:16px 30px;border:1px solid var(--accent);text-decoration:none;transition:transform .15s,box-shadow .2s;
+    box-shadow:0 0 40px rgba(255,106,43,.25)}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 0 60px rgba(255,106,43,.45)}
+  .btn .arr{font-size:18px}
+  .dl .meta{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint)}
+  .dl .meta b{color:var(--ink-dim);font-weight:400}
+
+  /* section header */
+  .sh{display:flex;align-items:center;gap:14px;margin:0 0 28px}
+  .sh .ix{color:var(--accent);font-size:10px;letter-spacing:.12em}
+  .sh h2{font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;white-space:nowrap}
+
+  section{padding:54px 0;border-top:1px solid var(--line)}
+
+  /* features */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  .cell{background:var(--base);padding:24px;position:relative}
+  .cell .k{font-family:var(--sans);font-weight:600;font-size:14px;letter-spacing:.04em;margin-bottom:8px}
+  .cell .k em{color:var(--accent);font-style:normal}
+  .cell p{font-size:12px;color:var(--ink-dim);line-height:1.65}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}.hero h1{font-size:38px}}
+
+  /* install steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .step{border:1px solid var(--line);padding:22px;position:relative;background:var(--panel)}
+  .step .n{font-family:var(--sans);font-weight:700;font-size:13px;color:var(--accent);letter-spacing:.1em;margin-bottom:10px}
+  .step h3{font-family:var(--sans);font-size:14px;font-weight:600;margin-bottom:6px;letter-spacing:.03em}
+  .step p{font-size:12px;color:var(--ink-dim)}
+  .step code{color:var(--ink2);background:var(--panel2);padding:1px 5px;font-size:11px}
+  @media(max-width:760px){.steps{grid-template-columns:1fr}}
+
+  .note{margin-top:24px;font-size:11px;color:var(--ink-faint);letter-spacing:.04em;text-align:center}
+  .note b{color:var(--ink-dim);font-weight:400}
+
+  footer{padding:40px 0 56px;border-top:1px solid var(--line);text-align:center}
+  footer .ll{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint)}
+  footer .ll b{color:var(--accent);font-weight:400}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="icon.png" alt="" />
+    <span class="wm">Agentic&nbsp;OS</span>
+    <span class="leader" style="max-width:120px"></span>
+    <div class="right">
+      <a href="https://github.com/silentobelisk/agentic-os">GitHub</a>
+      <a href="#install">Install</a>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="chip"><span class="dot"></span> Local-first · macOS</div>
+    <div><img class="mark" src="icon.png" alt="Agentic OS icon" /></div>
+    <h1>Agentic <span class="glow">OS</span></h1>
+    <p class="tag">A cinematic operations console for Claude Code. Plan usage, your most-used skills, a second-brain knowledge graph, and a live terminal — one screen, on your machine, on your Claude subscription.</p>
+
+    <div class="dl">
+      <a class="btn" href="https://github.com/silentobelisk/agentic-os/releases/latest/download/Agentic-OS-arm64.dmg">
+        <span class="arr">↓</span> Download for macOS
+      </a>
+      <div class="meta">Apple Silicon · macOS 12+ · <b>free · no API key</b></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="sh"><span class="ix">01 //</span><h2>What&apos;s inside</h2><span class="leader"></span></div>
+    <div class="grid">
+      <div class="cell"><div class="k"><em>Plan</em> Usage</div><p>Auto-detects your Claude plan and shows live session + weekly windows with reset countdowns. No API cost — it reads what you already pay for.</p></div>
+      <div class="cell"><div class="k"><em>Knowledge</em> Graph</div><p>Point it at a folder of notes and it maps your second brain into an interactive force-directed graph, built locally with /graphify.</p></div>
+      <div class="cell"><div class="k"><em>Live</em> Terminal</div><p>Talk to Claude Code inside the console — a streamed session on your subscription, no API key required.</p></div>
+      <div class="cell"><div class="k"><em>Most-used</em> Skills</div><p>Your skills ranked by how often you invoke them. Click to run inline or launch a real terminal session.</p></div>
+      <div class="cell"><div class="k"><em>Audience</em> Signals</div><p>Track YouTube, Instagram & TikTok follower counts — free, no API keys, fetched from your machine.</p></div>
+      <div class="cell"><div class="k"><em>Industry</em> Signal</div><p>A live board of AI/dev numbers from Hacker News & GitHub, refreshed on demand.</p></div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="sh"><span class="ix">02 //</span><h2>Install</h2><span class="leader"></span></div>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h3>Download</h3><p>Grab the <code>.dmg</code> with the button above (Apple Silicon).</p></div>
+      <div class="step"><div class="n">02</div><h3>Drag to Applications</h3><p>Open the disk image and drag <b>Agentic OS</b> into your Applications folder.</p></div>
+      <div class="step"><div class="n">03</div><h3>First launch</h3><p>The build is unsigned, so the first time: right-click the app → <code>Open</code> → <code>Open</code>.</p></div>
+    </div>
+    <p class="note">On first run, a one-time setup walks you through naming your operator profile, confirming your Claude plan, and (optionally) connecting your second brain. <b>Nothing leaves your device.</b></p>
+  </section>
+
+  <footer>
+    <div class="ll">Local-first · Runs on your <b>Claude subscription</b> · Nothing leaves this device</div>
+  </footer>
+</div>
+</body>
+</html>

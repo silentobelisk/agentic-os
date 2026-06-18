@@ -68,6 +68,8 @@ npm run build && npm run start
 Costs are **estimates** using standard Anthropic API rates (see
 `lib/pricing.ts`) — useful as a relative signal, not a billing statement.
 
+> **Knowledge-graph build:** the graph is built by spawning `claude -p "/graphify …" --dangerously-skip-permissions` on **your** machine, over **your** selected notes folder, via **your** logged-in `claude` CLI. The skipped permission prompts are expected (it runs headless) — nothing is sent anywhere, and it only ever reads the folder you point it at.
+
 ## Stack
 
 Next.js 16 (App Router) · React 19 · Tailwind v4 · Geist fonts · hand-rolled SVG
@@ -101,3 +103,8 @@ When either is set, the dashboard shows a **CALIBRATED** badge instead of
 - `NERVE_DATA_DIR` — override where Nerve Center stores its data (defaults to `~/.nerve-center`).
 - `NERVE_SESSION_BUDGET` / `NERVE_WEEKLY_BUDGET` — calibrate plan-usage budgets (weighted units).
 - The in-page **Terminal** and "Launch in Terminal" are macOS-oriented (the latter uses `open -a Terminal`).
+
+---
+
+© 2026 CortexTools. All rights reserved. This source is published for transparency and
+distribution; it is **not** licensed for reuse, redistribution, or modification.

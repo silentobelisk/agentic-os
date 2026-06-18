@@ -2,10 +2,17 @@
   "name": "nerve-center",
   "version": "0.1.0",
   "private": true,
+  "description": "Agentic OS — a local operations console for Claude Code: plan usage, skills, a second-brain knowledge graph, and a live terminal. macOS desktop app.",
+  "author": "silentobelisk <silentobelisk@users.noreply.github.com>",
+  "license": "UNLICENSED",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "electron:dev": "concurrently -k \"next dev -p 3000\" \"cross-env NODE_ENV=development NEXT_DEV_PORT=3000 electron .\"",
+    "build:standalone": "cp -r public .next/standalone/ 2>/dev/null || true; cp -r .next/static .next/standalone/.next/; node -e \"const fs=require('fs'),f='.next/standalone/package.json',p=JSON.parse(fs.readFileSync(f));delete p.build;delete p.devDependencies;delete p.scripts;p.main='server.js';fs.writeFileSync(f,JSON.stringify(p,null,2))\"",
+    "electron:build": "next build && npm run build:standalone && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac"
   },
   "dependencies": {
     "geist": "^1.7.2",
@@ -18,7 +25,63 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^42.0.0",
+    "electron-builder": "^26.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "build": {
+    "appId": "com.cortextools.agenticos",
+    "productName": "Agentic OS",
+    "artifactName": "Agentic-OS-${arch}.${ext}",
+    "afterPack": "electron/afterPack.js",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": ".next/standalone",
+        "to": "app"
+      }
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.icns",
+      "identity": null
+    },
+    "dmg": {
+      "title": "Agentic OS",
+      "icon": "build/icon.icns",
+      "background": "build/dmg-background.tiff",
+      "iconSize": 120,
+      "window": {
+        "width": 660,
+        "height": 420
+      },
+      "contents": [
+        {
+          "x": 170,
+          "y": 205,
+          "type": "file"
+        },
+        {
+          "x": 490,
+          "y": 205,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
   }
 }
