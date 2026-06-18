@@ -141,8 +141,9 @@
     <div class="steps">
       <div class="step"><div class="n">01</div><h3>Download</h3><p>Grab the <code>.dmg</code> with the button above (Apple Silicon).</p></div>
       <div class="step"><div class="n">02</div><h3>Drag to Applications</h3><p>Open the disk image and drag <b>Agentic OS</b> into your Applications folder.</p></div>
-      <div class="step"><div class="n">03</div><h3>First launch</h3><p>The build is unsigned, so the first time: right-click the app → <code>Open</code> → <code>Open</code>.</p></div>
+      <div class="step"><div class="n">03</div><h3>First open</h3><p>Not notarized yet, so macOS guards it. Open it once, then in <b>System Settings → Privacy &amp; Security</b> click <b>Open Anyway</b>.</p></div>
     </div>
+    <p class="note">Still blocked? Open <b>Terminal</b> and run <code>xattr -dr com.apple.quarantine "/Applications/Agentic OS.app"</code>, then open the app normally — this clears the download quarantine in one step.</p>
     <p class="note">On first run, a one-time setup walks you through naming your operator profile, confirming your Claude plan, and (optionally) connecting your second brain. <b>Nothing leaves your device.</b></p>
   </section>
 
