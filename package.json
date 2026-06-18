@@ -35,7 +35,7 @@
   "build": {
     "appId": "com.cortextools.agenticos",
     "productName": "Agentic OS",
-    "artifactName": "Agentic OS.${ext}",
+    "artifactName": "Agentic-OS.${ext}",
     "afterPack": "electron/afterPack.js",
     "directories": {
       "output": "release",
