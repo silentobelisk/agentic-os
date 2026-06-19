@@ -12,7 +12,8 @@
     "start": "next start",
     "electron:dev": "concurrently -k \"next dev -p 3000\" \"cross-env NODE_ENV=development NEXT_DEV_PORT=3000 electron .\"",
     "build:standalone": "cp -r public .next/standalone/ 2>/dev/null || true; cp -r .next/static .next/standalone/.next/; node -e \"const fs=require('fs'),f='.next/standalone/package.json',p=JSON.parse(fs.readFileSync(f));delete p.build;delete p.devDependencies;delete p.scripts;p.main='server.js';fs.writeFileSync(f,JSON.stringify(p,null,2))\"",
-    "electron:build": "next build && npm run build:standalone && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac"
+    "electron:build": "rm -rf release .next/standalone && next build && npm run build:standalone && electron-builder --mac && npm run notarize",
+    "notarize": "codesign --force --sign \"Developer ID Application: KYLE ALAN HERBEL (7BU74987UG)\" --timestamp \"release/Agentic-OS.dmg\" && xcrun notarytool submit \"release/Agentic-OS.dmg\" --keychain-profile agentic-os-notary --wait && xcrun stapler staple \"release/Agentic-OS.dmg\""
   },
   "dependencies": {
     "geist": "^1.7.2",
@@ -58,7 +59,10 @@
       ],
       "category": "public.app-category.developer-tools",
       "icon": "build/icon.icns",
-      "identity": null
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "dmg": {
       "title": "Agentic OS",

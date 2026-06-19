@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   // Pin the file-tracing root to this project so standalone tracing doesn't
   // walk up into the user's home directory.
   outputFileTracingRoot: __dirname,
+  // Never trace the electron-builder output into the standalone server — it
+  // contains a full copy of the .app (which contains another standalone copy…),
+  // so without this each build nests the previous app inside the new one.
+  outputFileTracingExcludes: {
+    "*": ["release/**", "dist/**"],
+  },
 };
 
 export default nextConfig;

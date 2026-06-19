@@ -141,9 +141,8 @@
     <div class="steps">
       <div class="step"><div class="n">01</div><h3>Download</h3><p>Grab the <code>.dmg</code> with the button above (Apple Silicon).</p></div>
       <div class="step"><div class="n">02</div><h3>Drag to Applications</h3><p>Open the disk image and drag <b>Agentic OS</b> into your Applications folder.</p></div>
-      <div class="step"><div class="n">03</div><h3>First open</h3><p>Not notarized, so macOS blocks it. Open <b>Terminal</b>, paste <code>xattr -cr "/Applications/Agentic OS.app"</code>, press Return, then open the app — done.</p></div>
+      <div class="step"><div class="n">03</div><h3>Open it</h3><p>Double-click <b>Agentic OS</b> — it opens right up. Signed with an Apple Developer ID and notarized by Apple, so no warnings, no Terminal.</p></div>
     </div>
-    <p class="note"><b>Why the Terminal step?</b> The app is signed but not notarized (that needs a paid Apple Developer account). On macOS 15+, Apple removed the right-click → Open bypass for unsigned apps, so the one-line command above — which just clears the “downloaded from the internet” quarantine flag — is the reliable way in. Tip: type <code>xattr -cr </code> then drag the app from Applications into Terminal to fill the path.</p>
     <p class="note">On first run, a one-time setup walks you through naming your operator profile, confirming your Claude plan, and (optionally) connecting your second brain. <b>Nothing leaves your device.</b></p>
   </section>
 
